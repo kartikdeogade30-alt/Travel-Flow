@@ -3,7 +3,7 @@ name: Upload Travel Data to S3
 on:
   push:
     paths:
-      - 'data/sample/**'
+      - 'data/sample/*.csv'
 
 jobs:
   upload:
@@ -20,9 +20,17 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: Upload File to S3
+      - name: Upload all sample CSV files to S3
         run: |
-          TIMESTAMP=$(date +"%Y%m%d_%H%M")
+          year=$(date +"%Y")
+          month=$(date +"%m")
+          day=$(date +"%d")
 
-          aws s3 cp data/sample/travel_sample.csv \
-          s3://travel-etl-project/raw/travel/year=2026/month=03/day=28/travel_${TIMESTAMP}.csv
+          for file in data/sample/*.csv; do
+
+            filename=$(basename "$file")
+
+            aws s3 cp "$file" \
+              "s3://travel-etl-project/raw/travel/year=${year}/month=${month}/day=${day}/${filename}"
+
+          done
